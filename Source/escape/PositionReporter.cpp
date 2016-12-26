@@ -11,6 +11,7 @@ UPositionReporter::UPositionReporter()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
+
 	// ...
 }
 
@@ -20,7 +21,12 @@ void UPositionReporter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
+	FString objectName = GetOwner()->GetName();
+	
+	auto location = GetOwner()->GetTransform().GetLocation();
+	FString positionInformation = FString::Printf(TEXT("X=%f, Y=%f"), location.X, location.Y);
+
+	UE_LOG(LogTemp, Warning, TEXT("%s is at %s"), *objectName, *positionInformation);
 	
 }
 
@@ -29,7 +35,6 @@ void UPositionReporter::BeginPlay()
 void UPositionReporter::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
 {
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
-
 	// ...
 }
 
