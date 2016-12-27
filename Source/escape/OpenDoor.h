@@ -16,6 +16,7 @@ public:
 	UOpenDoor();
 
 	// Called when the game starts
+	// Called when the game starts
 	virtual void BeginPlay() override;
 	
 	// Called every frame
@@ -23,13 +24,22 @@ public:
 
 private:
 	UPROPERTY(VisibleAnywhere)
-	float openAngle = 91.0f;
-	
+	float openAngle = -90.0f;
+	float closedAngle = 0.0f;
+	float lastTimeOpen = 0.0f;
+
+	UPROPERTY(EditAnywhere)
+	float secondsToClose = 1.0f;
+
 	UPROPERTY(EditAnywhere)
 	ATriggerVolume* pressurePlate;
 
 	UPROPERTY(EditAnywhere)
 	AActor* actorThatOpens;
+	
+	AActor* door;
+	UWorld* world;
 
 	void OpenDoor();
+	void CloseDoor();
 };
