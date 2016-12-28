@@ -29,7 +29,12 @@ void UGrabber::BeginPlay()
 void UGrabber::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
 {
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
-
-	// ...
+	FVector location;
+	FRotator rotator;
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(location, rotator);
+	FVector lineTrace = (location + rotator.Vector() * 10);
+	DrawDebugLine(GetWorld(), lineTrace, lineTrace + FVector(100.0f, 100.0f, 100.0f) * reach, FColor(255, 0, 0), false, 0, 0, 2.0f);
+	//UE_LOG(LogTemp, Warning, TEXT("Grabber in ta house!, loooking at %s , %s"), *location.ToString(), *rotator.ToString());
+	
 }
 

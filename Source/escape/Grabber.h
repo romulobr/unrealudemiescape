@@ -11,6 +11,8 @@ class ESCAPE_API UGrabber : public UActorComponent
 {
 	GENERATED_BODY()
 
+private:
+	const float reach = 100.0f;
 public:	
 	// Sets default values for this component's properties
 	UGrabber();
@@ -20,7 +22,4 @@ public:
 	
 	// Called every frame
 	virtual void TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction ) override;
-
-		
-	
 };
