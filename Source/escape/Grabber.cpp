@@ -29,12 +29,38 @@ void UGrabber::BeginPlay()
 void UGrabber::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
 {
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
-	FVector location;
-	FRotator rotator;
-	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(location, rotator);
-	FVector lineTrace = (location + rotator.Vector() * 10);
-	DrawDebugLine(GetWorld(), lineTrace, lineTrace + FVector(100.0f, 100.0f, 100.0f) * reach, FColor(255, 0, 0), false, 0, 0, 2.0f);
-	//UE_LOG(LogTemp, Warning, TEXT("Grabber in ta house!, loooking at %s , %s"), *location.ToString(), *rotator.ToString());
-	
-}
+	FVector playerLocation;
+	FRotator playerRotator;
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(playerLocation, playerRotator);
 
+	FVector lineTraceEnd = (playerLocation + playerRotator.Vector() * reach);
+	DrawDebugLine(
+		GetWorld(), 
+		playerLocation,
+		lineTraceEnd, 
+		FColor(255, 0, 0), 
+		false, 
+		0.0f, 
+		0.0f, 
+		2.0f);
+	
+	FHitResult hit;
+	//FCollisionObjectQueryParams objectQueryParams = FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody)
+	FCollisionQueryParams colisionQueryParams = FCollisionQueryParams(FName(TEXT("")), false, GetOwner());
+
+	FCollisionObjectQueryParams objectQueryParams = FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody);
+
+
+	GetWorld()->LineTraceSingleByObjectType(
+		hit,
+		playerLocation,
+		lineTraceEnd,
+		objectQueryParams,
+		colisionQueryParams
+	);
+	auto actor = hit.GetActor();
+	if(actor)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Grabber in ta house!, loooking at %s , %s"), *(actor->GetName()));
+	}		
+}
