@@ -14,16 +14,29 @@ UGrabber::UGrabber()
 	// ...
 }
 
+void UGrabber::Grab() {
+	UE_LOG(LogTemp, Warning, TEXT("grabbing"));
+}
 
 // Called when the game starts
 void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
 	UE_LOG(LogTemp, Warning, TEXT("Grabber in ta house!"));
-	
-	
-}
+	auto actor = GetOwner();
+	physicsHandle = actor->FindComponentByClass<UPhysicsHandleComponent>();
+	inputComponent = actor->FindComponentByClass<UInputComponent>();
 
+	if(!physicsHandle)
+	{
+		UE_LOG(LogTemp, Error, TEXT("physics handle not found on %s"), *(actor->GetName()));
+	}
+	if (inputComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("input component found on %s"), *(actor->GetName()));
+		inputComponent->BindAction("grab", IE_Pressed, this, &UGrabber::Grab);
+	}	
+}
 
 // Called every frame
 void UGrabber::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
@@ -61,6 +74,6 @@ void UGrabber::TickComponent( float DeltaTime, ELevelTick TickType, FActorCompon
 	auto actor = hit.GetActor();
 	if(actor)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Grabber in ta house!, loooking at %s , %s"), *(actor->GetName()));
+		UE_LOG(LogTemp, Warning, TEXT("Grabber in ta house!, loooking at %s"), *(actor->GetName()));
 	}		
 }

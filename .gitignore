@@ -69,3 +69,4 @@ DerivedDataCache/*
 
 *.VC.db
 *.VC.opendb
+.vs/
