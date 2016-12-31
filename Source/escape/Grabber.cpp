@@ -92,6 +92,5 @@ void UGrabber::TickComponent( float DeltaTime, ELevelTick TickType, FActorCompon
 {
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
 	updateLookingAt();
-	auto c = physicsHandle->GrabbedComponent;
 	physicsHandle->SetTargetLocation(holdingAt);
 }
