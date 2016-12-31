@@ -15,7 +15,39 @@ UGrabber::UGrabber()
 }
 
 void UGrabber::Grab() {
-	UE_LOG(LogTemp, Warning, TEXT("grabbing"));
+	auto component = lookingAt.GetComponent();
+	auto actor = lookingAt.GetActor();
+
+	if (lookingAt.GetComponent()) {
+		physicsHandle->GrabComponentAtLocationWithRotation(component, NAME_None, holdingAt, actor->GetActorRotation());
+		UE_LOG(LogTemp, Warning, TEXT("grabbing"));
+	}	
+}
+
+void UGrabber::Release() {
+	if (physicsHandle->GrabbedComponent) {
+		physicsHandle->ReleaseComponent();
+		UE_LOG(LogTemp, Warning, TEXT("releasing"));
+	}	
+}
+
+void UGrabber::findDependencies() {
+	auto actor = GetOwner();
+	physicsHandle = actor->FindComponentByClass<UPhysicsHandleComponent>();
+	inputComponent = actor->FindComponentByClass<UInputComponent>();
+	if (!physicsHandle)
+	{
+		UE_LOG(LogTemp, Error, TEXT("physics handle not found on %s"), *(actor->GetName()));
+	}
+	if (!inputComponent)
+	{
+		UE_LOG(LogTemp, Error, TEXT("input not found on %s"), *(actor->GetName()));
+	}
+}
+
+void UGrabber::bindInput() {
+	inputComponent->BindAction("grab", IE_Pressed, this, &UGrabber::Grab);
+	inputComponent->BindAction("grab", IE_Released, this, &UGrabber::Release);
 }
 
 // Called when the game starts
@@ -23,57 +55,43 @@ void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
 	UE_LOG(LogTemp, Warning, TEXT("Grabber in ta house!"));
-	auto actor = GetOwner();
-	physicsHandle = actor->FindComponentByClass<UPhysicsHandleComponent>();
-	inputComponent = actor->FindComponentByClass<UInputComponent>();
+	world = GetWorld();
+	findDependencies();	
+	bindInput();
+}
 
-	if(!physicsHandle)
-	{
-		UE_LOG(LogTemp, Error, TEXT("physics handle not found on %s"), *(actor->GetName()));
-	}
-	if (inputComponent)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("input component found on %s"), *(actor->GetName()));
-		inputComponent->BindAction("grab", IE_Pressed, this, &UGrabber::Grab);
-	}	
+void UGrabber::updateLookingAt() {
+	FVector playerLocation;
+	FRotator playerRotator;
+	
+	world->GetFirstPlayerController()->GetPlayerViewPoint(playerLocation, playerRotator);
+
+	FVector lineTraceEnd = (playerLocation + playerRotator.Vector() * reach);
+	holdingAt = lineTraceEnd;
+	DrawDebugLine(
+		world,
+		playerLocation,
+		lineTraceEnd,
+		FColor(255, 0, 0),
+		false,
+		0.0f,
+		0.0f,
+		2.0f);
+	
+	world->LineTraceSingleByObjectType(
+		lookingAt,
+		playerLocation,
+		lineTraceEnd,
+		objectQueryParams,
+		colisionQueryParams
+	);
 }
 
 // Called every frame
 void UGrabber::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
 {
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
-	FVector playerLocation;
-	FRotator playerRotator;
-	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(playerLocation, playerRotator);
-
-	FVector lineTraceEnd = (playerLocation + playerRotator.Vector() * reach);
-	DrawDebugLine(
-		GetWorld(), 
-		playerLocation,
-		lineTraceEnd, 
-		FColor(255, 0, 0), 
-		false, 
-		0.0f, 
-		0.0f, 
-		2.0f);
-	
-	FHitResult hit;
-	//FCollisionObjectQueryParams objectQueryParams = FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody)
-	FCollisionQueryParams colisionQueryParams = FCollisionQueryParams(FName(TEXT("")), false, GetOwner());
-
-	FCollisionObjectQueryParams objectQueryParams = FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody);
-
-
-	GetWorld()->LineTraceSingleByObjectType(
-		hit,
-		playerLocation,
-		lineTraceEnd,
-		objectQueryParams,
-		colisionQueryParams
-	);
-	auto actor = hit.GetActor();
-	if(actor)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Grabber in ta house!, loooking at %s"), *(actor->GetName()));
-	}		
+	updateLookingAt();
+	auto c = physicsHandle->GrabbedComponent;
+	physicsHandle->SetTargetLocation(holdingAt);
 }
