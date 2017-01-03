@@ -40,6 +40,7 @@ private:
 	AActor* door;
 	UWorld* world;
 
+	float TotalMassOfActorsOnPressurePlate();
 	void OpenDoor();
 	void CloseDoor();
 };

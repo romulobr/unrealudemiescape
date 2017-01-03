@@ -25,9 +25,10 @@ void UOpenDoor::BeginPlay()
 void UOpenDoor::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
 {
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
-	if (pressurePlate->IsOverlappingActor(actorThatOpens)) {
+	if (TotalMassOfActorsOnPressurePlate() > 13.0f) {
 		OpenDoor();
-	} else if (lastTimeOpen != 0.0f && world->GetTimeSeconds() - lastTimeOpen > secondsToClose) {
+	}		
+	else if (lastTimeOpen != 0.0f && world->GetTimeSeconds() - lastTimeOpen > secondsToClose) {
 		CloseDoor();
 	}
 }
@@ -42,4 +43,17 @@ void UOpenDoor::CloseDoor()
 {
 	door->SetActorRotation(FRotator(0, closedAngle, 0));
 	lastTimeOpen = 0.0f;
+}
+
+float UOpenDoor::TotalMassOfActorsOnPressurePlate() {
+	OUT TArray<AActor*> actors;
+	pressurePlate->GetOverlappingActors(actors);
+	
+	float sum = 0.0f;
+	for (const auto& actor : actors) {
+		auto primitive = actor->FindComponentByClass<UPrimitiveComponent>();
+		sum += primitive->GetMass();
+		UE_LOG(LogTemp, Warning, TEXT("mass: %f, total: %f"), primitive->GetMass(), sum);
+	}
+	return sum;
 }
