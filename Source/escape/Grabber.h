@@ -37,6 +37,6 @@ private:
 	
 	void Grab();
 	void Release();
-	void findDependencies();
+	bool findDependencies();
 	void bindInput();
 };

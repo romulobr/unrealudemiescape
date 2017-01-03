@@ -18,31 +18,21 @@ void UOpenDoor::BeginPlay()
 	world = GetWorld();
 	door = GetOwner();
 	actorThatOpens = GetWorld()->GetFirstPlayerController()->GetPawn();
+	if (!pressurePlate) {
+		UE_LOG(LogTemp, Warning, TEXT("No presure plate set for %s, door will never open"), *GetOwner()->GetName());
+	}
 }
-
 
 // Called every frame
 void UOpenDoor::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
 {
-	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
-	if (TotalMassOfActorsOnPressurePlate() > 13.0f) {
-		OpenDoor();
+	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );	
+	if (pressurePlate && TotalMassOfActorsOnPressurePlate() > triggerMass) {
+		onOpen.Broadcast();
 	}		
-	else if (lastTimeOpen != 0.0f && world->GetTimeSeconds() - lastTimeOpen > secondsToClose) {
-		CloseDoor();
+	else {
+		onClose.Broadcast();
 	}
-}
-
-void UOpenDoor::OpenDoor()
-{
-	door->SetActorRotation(FRotator(0, openAngle, 0));
-	lastTimeOpen = world->GetTimeSeconds();
-}
-
-void UOpenDoor::CloseDoor()
-{
-	door->SetActorRotation(FRotator(0, closedAngle, 0));
-	lastTimeOpen = 0.0f;
 }
 
 float UOpenDoor::TotalMassOfActorsOnPressurePlate() {

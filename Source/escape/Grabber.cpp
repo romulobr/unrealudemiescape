@@ -26,8 +26,9 @@ void UGrabber::Release() {
 void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
-	findDependencies();	
-	bindInput();
+	if (findDependencies()) {
+		bindInput();
+	}	
 }
 
 void UGrabber::updateLookingAtAndHoldingAt() {
@@ -63,12 +64,26 @@ UGrabber::UGrabber()
 	// ...
 }
 
-void UGrabber::findDependencies() {
+bool UGrabber::findDependencies() {
+	bool wiredProperly = true;
+	
 	world = GetWorld();
 	auto actor = GetOwner();
 	physicsHandle = actor->FindComponentByClass<UPhysicsHandleComponent>();
 	inputComponent = actor->FindComponentByClass<UInputComponent>();
+	
+	if (!physicsHandle) {
+		UE_LOG(LogTemp, Warning, TEXT("%s badly wired, missing physicsHandle"));
+		wiredProperly = false;
+	}
+	if (!inputComponent) {
+		UE_LOG(LogTemp, Warning, TEXT("%s badly wired, missing inputComponent"));
+		wiredProperly = false;
+	}
+
+	return wiredProperly;
 }
+
 void UGrabber::bindInput() {
 	inputComponent->BindAction("grab", IE_Pressed, this, &UGrabber::Grab);
 	inputComponent->BindAction("grab", IE_Released, this, &UGrabber::Release);
